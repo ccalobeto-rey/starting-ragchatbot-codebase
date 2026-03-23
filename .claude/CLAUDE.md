@@ -31,7 +31,7 @@ uv sync --group dev   # install dev deps first
 ./scripts/lint.sh     # read-only checks (exit 0 = passing)
 ```
 
-Always use `uv run` to execute Python: `uv run python script.py`
+Always use `uv run` to execute Python: `uv run python script.py`. Never use `pip` directly — use `uv add package_name` to add dependencies.
 
 ## Architecture
 
