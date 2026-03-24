@@ -15,8 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
-    
+
     setupEventListeners();
+    setupResizablePanel();
     createNewSession();
     loadCourseStats();
 });
@@ -40,6 +41,71 @@ function setupEventListeners() {
     });
 }
 
+
+// Resizable Panel
+function setupResizablePanel() {
+    const sidebar = document.querySelector('.sidebar');
+    const resizeHandle = document.getElementById('resizeHandle');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    if (!sidebar || !resizeHandle || !sidebarToggle) return;
+
+    const STORAGE_KEY = 'sidebarWidth';
+    const MIN_WIDTH = 160;
+    const MAX_WIDTH = 600;
+
+    // Restore saved width
+    const savedWidth = localStorage.getItem(STORAGE_KEY);
+    if (savedWidth) {
+        sidebar.style.width = savedWidth + 'px';
+    }
+
+    // Restore collapsed state
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        resizeHandle.classList.add('sidebar-collapsed');
+    }
+
+    // Drag to resize
+    let isDragging = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+        if (e.target === sidebarToggle) return;
+        if (sidebar.classList.contains('collapsed')) return;
+        isDragging = true;
+        startX = e.clientX;
+        startWidth = sidebar.offsetWidth;
+        resizeHandle.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const delta = e.clientX - startX;
+        const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + delta));
+        sidebar.style.width = newWidth + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        resizeHandle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem(STORAGE_KEY, sidebar.offsetWidth);
+    });
+
+    // Toggle collapse
+    sidebarToggle.addEventListener('click', () => {
+        const collapsed = sidebar.classList.toggle('collapsed');
+        resizeHandle.classList.toggle('sidebar-collapsed', collapsed);
+        localStorage.setItem('sidebarCollapsed', collapsed);
+    });
+}
 
 // Chat Functions
 async function sendMessage() {
